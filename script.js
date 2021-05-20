@@ -1,33 +1,20 @@
 import * as THREE from "./three.module.js";
-import { OrbitControls } from "./OrbitControls.js";
 
 // Canvas
-var canvas = document.querySelector("canvas.webgl");
+const canvas = document.querySelector(".webgl");
 
-//Creating Scene
-var scene = new THREE.Scene();
+// Scene
+const scene = new THREE.Scene();
 
-//Add Camera
-var camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight
-);
+// Objects
+//const geometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
+const geometry = new THREE.SphereGeometry(0.8, 40, 40);
+const geometry1 = new THREE.SphereGeometry(1, 100, 40);
 
-camera.position.z = 2.5;
+const particlesGeometry = new THREE.BufferGeometry();
+const particlesCnt = 30000;
 
-//Add Renderer
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-//Add geometry
-var geometry = new THREE.SphereGeometry(0.8, 40, 40);
-var geometry1 = new THREE.SphereGeometry(1, 100, 40);
-
-var particlesGeometry = new THREE.BufferGeometry();
-var particlesCnt = 30000;
-
-var posArray = new Float32Array(particlesCnt * 2);
+const posArray = new Float32Array(particlesCnt * 2);
 // xyz xyz xyz xyz
 
 for (let i = 0; i < particlesCnt * 3; i++) {
@@ -39,11 +26,12 @@ for (let i = 0; i < particlesCnt * 3; i++) {
 
 particlesGeometry.setAttribute(
   "position",
-  new THREE.BufferAttribute(posArray, 3, true)
+  new THREE.BufferAttribute(posArray, 3)
 );
 
-//Materials
-var material = new THREE.PointsMaterial({
+// Materials
+
+const material = new THREE.PointsMaterial({
   size: 0.005,
 });
 
@@ -54,21 +42,67 @@ const particlesMaterial = new THREE.PointsMaterial({
   blending: THREE.AdditiveBlending,
 });
 
-//Mesh
-var sphere = new THREE.Points(geometry, material);
-var sphere1 = new THREE.Points(geometry1, material);
-var particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+// Mesh
+const sphere = new THREE.Points(geometry, material);
+const sphere1 = new THREE.Points(geometry1, material);
+const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
 scene.add(sphere, sphere1, particlesMesh);
 
-//Resize
-window.addEventListener("resize", resize);
+// Lights
 
-function resize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
+const pointLight = new THREE.PointLight(0xffffff, 0.1);
+pointLight.position.x = 2;
+pointLight.position.y = 3;
+pointLight.position.z = 4;
+scene.add(pointLight);
+
+/**
+ * Sizes
+ */
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+};
+
+window.addEventListener("resize", () => {
+  // Update sizes
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+
+  // Update camera
+  camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.render(scene, camera);
-}
+
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+/**
+ * Camera
+ */
+// Base camera
+const camera = new THREE.PerspectiveCamera(
+  75,
+  sizes.width / sizes.height,
+  0.1,
+  100
+);
+camera.position.x = 0;
+camera.position.y = 0;
+camera.position.z = 3;
+scene.add(camera);
+
+/**
+ * Renderer
+ */
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+});
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+// Mouse
 
 document.addEventListener("mousemove", animateParticles);
 
@@ -80,8 +114,10 @@ function animateParticles(event) {
   mouseY = event.clientY;
 }
 
-const controls = new OrbitControls(camera, renderer.domElement);
-// animate
+/**
+ * Animate
+ */
+
 const clock = new THREE.Clock();
 
 const tick = () => {

@@ -1,4 +1,5 @@
 import * as THREE from "./three.module.js";
+import { OrbitControls } from "./OrbitControls.js";
 
 // Canvas
 var canvas = document.querySelector("canvas.webgl");
@@ -79,6 +80,7 @@ function animateParticles(event) {
   mouseY = event.clientY;
 }
 
+const controls = new OrbitControls(camera, renderer.domElement);
 // animate
 const clock = new THREE.Clock();
 
